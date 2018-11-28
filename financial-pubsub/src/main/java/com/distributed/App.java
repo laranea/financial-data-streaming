@@ -2,8 +2,8 @@ package com.distributed;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import com.distributed.actors.Greeter;
-import com.distributed.actors.Printer;
+import com.distributed.actors.helloworld.Greeter;
+import com.distributed.actors.helloworld.Printer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
