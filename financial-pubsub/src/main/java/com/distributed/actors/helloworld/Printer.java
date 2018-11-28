@@ -11,9 +11,9 @@ public class Printer extends AbstractActor {
     }
 
     static public class Greeting {
-        public final String message;
+        public final Object message;
 
-        public Greeting(String message) {
+        public Greeting(Object message) {
             this.message = message;
         }
     }
@@ -27,7 +27,7 @@ public class Printer extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Greeting.class, greeting -> {
-                    log.info(greeting.message);
+                    log.info("Trade: {}", greeting.message);
                 })
                 .build();
     }

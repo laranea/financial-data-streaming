@@ -2,6 +2,8 @@ package com.distributed;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
+import com.distributed.actors.CoinLoader;
 import com.distributed.actors.helloworld.Greeter;
 import com.distributed.actors.helloworld.Printer;
 import org.slf4j.Logger;
@@ -15,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
-import static com.distributed.properties.Tokens.ACTORSYSTEM_NAME;
+import static com.distributed.properties.Tokens.*;
 import static java.nio.file.StandardOpenOption.READ;
 
 /**
@@ -47,22 +49,17 @@ public class App {
             // Create actors (note the ActorRef and not actual actor objects.
             final ActorRef printerActor = system.actorOf(Printer.props(), "printerActor");
 
-            final ActorRef howdyGreeter =  system.actorOf(Greeter.props("Howdy", printerActor), "howdyGreeter");
-            final ActorRef helloGreeter = system.actorOf(Greeter.props("Hello", printerActor), "helloGreeter");
-            final ActorRef goodDayGreeter = system.actorOf(Greeter.props("Good day", printerActor), "goodDayGreeter");
+            String dataFilePath = properties.getProperty(DATA_FILE);
 
-            // Send some messages
-            howdyGreeter.tell(new Greeter.WhoToGreet("Tim"), ActorRef.noSender());
-            howdyGreeter.tell(new Greeter.Greet(), ActorRef.noSender());
+            final ActorRef loaderActor = system.actorOf(CoinLoader.props(dataFilePath, printerActor), "coinLoaderActor");
 
 
-            helloGreeter.tell(new Greeter.WhoToGreet("Laurens"), ActorRef.noSender());
-            helloGreeter.tell(new Greeter.Greet(), ActorRef.noSender());
+            System.out.println(properties.getProperty(INTERVAL_MS));
 
-            goodDayGreeter.tell(new Greeter.WhoToGreet("sir"), ActorRef.noSender());
-            goodDayGreeter.tell(new Greeter.Greet(), ActorRef.noSender());
+            long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
+            loaderActor.tell(new CoinLoader.Start(interval), ActorRef.noSender());
 
-            printerActor.tell(new Printer.Greeting("Direct message"), ActorRef.noSender());
+//            printerActor.tell(new Printer.Greeting("Direct message"), ActorRef.noSender());
 
             System.out.println("Press ENTER to exit the system");
             System.in.read();
