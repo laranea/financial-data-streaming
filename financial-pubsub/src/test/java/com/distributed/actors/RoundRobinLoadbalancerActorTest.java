@@ -54,4 +54,25 @@ public class RoundRobinLoadbalancerActorTest {
             a1.expectMsg(Duration.ofSeconds(1), "done");
     }
 
+    @Test
+    public void test_broadcast(){
+        final TestKit a1 = new TestKit(system);
+        final TestKit a2 = new TestKit(system);
+
+        List<ActorRef> actors = new ArrayList<>();
+        actors.add(a1.getRef());
+        actors.add(a2.getRef());
+
+        final Props props = RoundRobinLoadbalancerActor.props(actors);
+        final ActorRef subject = system.actorOf(props);
+
+        String message = "hey";
+        RoundRobinLoadbalancerActor.Broadcast b = new RoundRobinLoadbalancerActor.Broadcast(message);
+
+        subject.tell(b, ActorRef.noSender());
+        a1.expectMsg(Duration.ofSeconds(1), message);
+        a2.expectMsg(Duration.ofSeconds(1), message);
+
+    }
+
 }

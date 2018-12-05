@@ -23,7 +23,7 @@ public class RoundRobinLoadbalancerActor extends AbstractActor {
     private List<ActorRef> actors;
     private int pointer = 0;
 
-    public class Broadcast {
+    public static class Broadcast {
         public final Object objectToBroadcast;
 
         public Broadcast(Object objectToBroadcast) {
@@ -35,7 +35,7 @@ public class RoundRobinLoadbalancerActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder().match(Broadcast.class, broadcast -> {
             for (ActorRef a : actors) {
-                getSelf().tell(broadcast.objectToBroadcast, a);
+                a.forward(broadcast.objectToBroadcast, getContext());
             }
         }).matchAny(o -> {
 
