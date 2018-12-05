@@ -7,19 +7,20 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Bucket extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    public String symbol;
+    public String topic;
     public List<ActorRef> clients;
 
-    public static Props props(String symbol, List<ActorRef> clients) {
-        return Props.create(Bucket.class, () -> new Bucket(symbol, clients));
+    public static Props props(String topic) {
+        return Props.create(Bucket.class, () -> new Bucket(topic));
     }
-    public Bucket(String symbol, List<ActorRef> clients) {
-        this.symbol = symbol;
-        this.clients = clients;
+    public Bucket(String topic) {
+        this.topic = topic;
+        this.clients = new ArrayList<>();
     }
 
     static public class Receiver {
@@ -28,14 +29,22 @@ public class Bucket extends AbstractActor {
             this.trade = trade;
         }
     }
+    static public class  NewClient{
+        public final ActorRef client;
+        public NewClient(ActorRef client){
+            this.client = client;
+        }
+    }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Bucket.Receiver.class, receiver-> {
                     for (ActorRef ref : clients){
-                        ref.tell(new ClientEndPoint.Receiver(receiver.trade), getSelf());
+                        ref.tell(new ClientActor.Receiver(receiver.trade), getSelf());
                     }
+                }).match(Bucket.NewClient.class, newClient-> {
+                    this.clients.add(newClient.client);
                 }).build();
     }
 }
