@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
-public class CoinLoader extends AbstractActor {
+public class DataLoader extends AbstractActor {
 
 
     static public Props props(String dataFilePath, ActorRef ref) {
-        return Props.create(CoinLoader.class, () -> new CoinLoader(dataFilePath, ref));
+        return Props.create(DataLoader.class, () -> new DataLoader(dataFilePath, ref));
     }
 
     static public class Start {
@@ -40,7 +40,7 @@ public class CoinLoader extends AbstractActor {
     private final List<String> data;
     private Cancellable cancellable;
 
-    public CoinLoader(String dataFilePath, ActorRef ref) throws IOException {
+    public DataLoader(String dataFilePath, ActorRef ref) throws IOException {
         if(dataFilePath == null) {
             throw new IllegalArgumentException("File path cannot be null");
         }
