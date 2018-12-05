@@ -39,7 +39,7 @@ public class ClientActor  extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Receiver.class, receiver -> {
-                    log.info(receiver.trade.symbol_id);
+                    log.info(receiver.trade.toString());
                 }).match(SubscribeToBucket.class, subscription -> {
                     this.subscriberActor.tell(new Subscriber.SubscribeClientToTopic(getSelf(), subscription.topic), getSelf());
                 }).build();

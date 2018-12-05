@@ -55,22 +55,23 @@ public class Subscriber extends AbstractActor {
         }
     }
 
+    static class GetBucketRefs{
+
+        public GetBucketRefs(){
+        }
+    }
+
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
             .match(SubscribeClientToTopic.class, subscription-> {
-
-//                List<ActorRef> buckets = bucketRefs.get(subscription.topic);
-//
-//                if(buckets == null){
-//
-//                }
-
-
                 clientRefs.get(subscription.topic).add(subscription.client);
                 for(ActorRef bucketRef : bucketRefs.get(subscription.topic)){
                     bucketRef.tell(new Bucket.NewClient(subscription.client), getSelf());
                 }
+            }).match(GetBucketRefs.class, n -> {
+                getSender().tell(new Sorter.BucketRefs(this.bucketRefs), getSelf());
             }).build();
     }
 }

@@ -14,16 +14,12 @@ import java.util.List;
 
 public class Parser extends AbstractActor {
     Gson gson;
-    public List<ActorRef> sorterRefs;
+    public ActorRef sorterRef;
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
     public Parser(ActorRef sorterRef){
         this.gson = new Gson();
-        this.sorterRefs = new ArrayList<>();
-        this.sorterRefs.add(sorterRef);
-    }
-    public void addSorterRef(ActorRef sorterRef){
-        this.sorterRefs.add(sorterRef);
+        this.sorterRef = (sorterRef);
     }
     public static Props props(ActorRef sorterRef) {
         return Props.create(Parser.class, () -> new Parser(sorterRef));
@@ -36,15 +32,12 @@ public class Parser extends AbstractActor {
         }
     }
 
-
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(RAWJson.class, rawJson -> {
                     Trade trade = gson.fromJson((String) rawJson.json, Trade.class);
-                    for (ActorRef ref : this.sorterRefs){
-                        ref.tell(new Sorter.Receiver(trade), getSelf());
-                    }
+                    sorterRef.tell(new Sorter.Receiver(trade), getSelf());
                 }).build();
     }
 }

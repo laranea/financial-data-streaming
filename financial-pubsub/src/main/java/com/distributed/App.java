@@ -51,7 +51,7 @@ public class App {
 
 
 
-            final ActorRef sorterActor = system.actorOf(Sorter.props(bucketRefs), "sorterActor");
+            final ActorRef sorterActor = system.actorOf(Sorter.props(subscriberActor), "sorterActor");
             final ActorRef parserActor = system.actorOf(Parser.props(sorterActor), "parserActor");
             String dataFilePath = properties.getProperty(DATA_FILE);
 
