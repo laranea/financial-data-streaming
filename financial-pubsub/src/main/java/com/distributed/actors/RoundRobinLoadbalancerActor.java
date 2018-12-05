@@ -7,9 +7,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class RoundRobinLoadbalancerActor extends AbstractActor {
 
@@ -19,12 +17,11 @@ public class RoundRobinLoadbalancerActor extends AbstractActor {
 
     public RoundRobinLoadbalancerActor(List<ActorRef> actors) {
         this.actors = actors;
-        this.rrList = actors.iterator();
     }
 
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private List<ActorRef> actors;
-    private Iterator<ActorRef> rrList;
+    private int pointer = 0;
 
     public class Broadcast {
         public final Object objectToBroadcast;
@@ -42,8 +39,22 @@ public class RoundRobinLoadbalancerActor extends AbstractActor {
             }
         }).matchAny(o -> {
 
-            rrList.next();
+            int len = actors.size();
 
+            if(len == 0){
+                log.error("No actors to send message too");
+                return;
+            }
+
+            if(pointer >= len){
+                pointer = 0;
+            }
+
+            ActorRef actor = actors.get(pointer);
+
+            log.info("{} sent message {} to {}", getSender(), o, actor);
+            actor.forward(o, getContext());
+            pointer++;
         }).build();
     }
 }
