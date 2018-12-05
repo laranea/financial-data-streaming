@@ -41,23 +41,16 @@ public class App {
         ActorSystem system = ActorSystem.create(properties.getProperty(ACTORSYSTEM_NAME));
 
         try {
-            final ActorRef clientActor1 = system.actorOf(ClientEndPoint.props(), "clientActor1");
-            final ActorRef clientActor2 = system.actorOf(ClientEndPoint.props(), "clientACtor2");
-            List<ActorRef> JPYclients = new ArrayList<>();
-            JPYclients.add(clientActor1);
-            JPYclients.add(clientActor2);
-            List<ActorRef> USDClients = new ArrayList<>();
-            USDClients.add(clientActor1);
+            final ActorRef subscriberActor = system.actorOf(Subscriber.props(), "subscriberActor");
 
-            Map<String, List<ActorRef>> bucketRefs = new HashMap<>();
-            bucketRefs.put("BITFLYER_PERP_BTC_JPY", new ArrayList<>());
-            bucketRefs.put("BITMEX_SPOT_BTC_USD", new ArrayList<>());
+            final ActorRef clientActor1 = system.actorOf(ClientActor.props(subscriberActor), "clientActor1");
+            final ActorRef clientActor2 = system.actorOf(ClientActor.props(subscriberActor), "clientACtor2");
+            clientActor1.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
+            clientActor1.tell(new ClientActor.SubscribeToBucket("BITMEX_SPOT_BTC_USD"), ActorRef.noSender());
+            clientActor2.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
 
-            final ActorRef bucketActor1 = system.actorOf(Bucket.props("BF Bucket", JPYclients), "bfBucketActor");
-            final ActorRef bucketActor2 = system.actorOf(Bucket.props("BM Bucket", USDClients), "bmBucketActor");
 
-            bucketRefs.get("BITFLYER_PERP_BTC_JPY").add(bucketActor1);
-            bucketRefs.get("BITMEX_SPOT_BTC_USD").add(bucketActor2);
+
             final ActorRef sorterActor = system.actorOf(Sorter.props(bucketRefs), "sorterActor");
             final ActorRef parserActor = system.actorOf(Parser.props(sorterActor), "parserActor");
             String dataFilePath = properties.getProperty(DATA_FILE);
