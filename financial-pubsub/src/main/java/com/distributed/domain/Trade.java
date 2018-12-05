@@ -7,11 +7,11 @@ public class Trade {
     public String time_exchange;
     public String time_coinapi;
     public String uuid;
-    public long price;
-    public double size;
+    public String price;
+    public String size;
     public String taker_side;
-    public String symbol;
-    public double sequence;
+    public String symbol_id;
+    public String sequence;
     public String trade;
 
     public Trade(){
@@ -20,14 +20,14 @@ public class Trade {
 
     @Override
     public String toString() {
-        return "Trade{" +
+        return "Trade {" +
                 "time_exchange=" + time_exchange +
                 ", time_coinapi=" + time_coinapi +
                 ", uuid=" + uuid +
                 ", price=" + price +
                 ", size=" + size +
                 ", taker_side='" + taker_side + '\'' +
-                ", symbol='" + symbol + '\'' +
+                ", symbol='" + symbol_id + '\'' +
                 ", sequence=" + sequence +
                 ", trade='" + trade + '\'' +
                 '}';

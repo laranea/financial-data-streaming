@@ -3,8 +3,10 @@ package com.distributed;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.distributed.actors.Bucket;
 import com.distributed.actors.CoinLoader;
 import com.distributed.actors.Parser;
+import com.distributed.actors.Sorter;
 import com.distributed.actors.helloworld.Greeter;
 import com.distributed.actors.helloworld.Printer;
 import org.slf4j.Logger;
@@ -15,8 +17,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 import static com.distributed.properties.Tokens.*;
 import static java.nio.file.StandardOpenOption.READ;
@@ -43,25 +44,25 @@ public class App {
 
         Properties properties = oProperties.get();
 
-        // Create Actor system where the actors will "live"
         ActorSystem system = ActorSystem.create(properties.getProperty(ACTORSYSTEM_NAME));
 
         try {
-            // Create actors (note the ActorRef and not actual actor objects.
-            final ActorRef printerActor = system.actorOf(Printer.props(), "printerActor");
-            final ActorRef parserActor = system.actorOf(Parser.props(), "parserActor");
-
+            Map<String, List<ActorRef>> bucketRefs = new HashMap<>();
+            bucketRefs.put("BITFLYER_PERP_BTC_JPY", new ArrayList<>());
+            bucketRefs.put("BITMEX_SPOT_BTC_USD", new ArrayList<>());
+            final ActorRef bucketActor1 = system.actorOf(Bucket.props(), "bfBucketActor");
+            final ActorRef bucketActor2 = system.actorOf(Bucket.props(), "bmBucketActor");
+            bucketRefs.get("BITFLYER_PERP_BTC_JPY").add(bucketActor1);
+            bucketRefs.get("BITMEX_SPOT_BTC_USD").add(bucketActor2);
+            final ActorRef sorterActor = system.actorOf(Sorter.props(bucketRefs), "sorterActor");
+            final ActorRef parserActor = system.actorOf(Parser.props(sorterActor), "parserActor");
             String dataFilePath = properties.getProperty(DATA_FILE);
 
             final ActorRef loaderActor = system.actorOf(CoinLoader.props(dataFilePath, parserActor), "coinLoaderActor");
 
-
-            System.out.println(properties.getProperty(INTERVAL_MS));
-
             long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
-            loaderActor.tell(new CoinLoader.Start(interval), ActorRef.noSender());
 
-//            printerActor.tell(new Printer.Greeting("Direct message"), ActorRef.noSender());
+            loaderActor.tell(new CoinLoader.Start(interval), ActorRef.noSender());
 
             System.out.println("Press ENTER to exit the system");
             System.in.read();
