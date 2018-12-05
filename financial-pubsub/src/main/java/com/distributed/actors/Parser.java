@@ -41,7 +41,6 @@ public class Parser extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(RAWJson.class, rawJson -> {
-                    log.info("Trade: {}", rawJson.json);
                     Trade trade = gson.fromJson((String) rawJson.json, Trade.class);
                     for (ActorRef ref : this.sorterRefs){
                         ref.tell(new Sorter.Receiver(trade), getSelf());

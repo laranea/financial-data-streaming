@@ -2,13 +2,7 @@ package com.distributed;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
-import com.distributed.actors.Bucket;
-import com.distributed.actors.CoinLoader;
-import com.distributed.actors.Parser;
-import com.distributed.actors.Sorter;
-import com.distributed.actors.helloworld.Greeter;
-import com.distributed.actors.helloworld.Printer;
+import com.distributed.actors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +41,21 @@ public class App {
         ActorSystem system = ActorSystem.create(properties.getProperty(ACTORSYSTEM_NAME));
 
         try {
+            final ActorRef clientActor1 = system.actorOf(ClientEndPoint.props(), "clientActor1");
+            final ActorRef clientActor2 = system.actorOf(ClientEndPoint.props(), "clientACtor2");
+            List<ActorRef> JPYclients = new ArrayList<>();
+            JPYclients.add(clientActor1);
+            JPYclients.add(clientActor2);
+            List<ActorRef> USDClients = new ArrayList<>();
+            USDClients.add(clientActor1);
+
             Map<String, List<ActorRef>> bucketRefs = new HashMap<>();
             bucketRefs.put("BITFLYER_PERP_BTC_JPY", new ArrayList<>());
             bucketRefs.put("BITMEX_SPOT_BTC_USD", new ArrayList<>());
-            final ActorRef bucketActor1 = system.actorOf(Bucket.props(), "bfBucketActor");
-            final ActorRef bucketActor2 = system.actorOf(Bucket.props(), "bmBucketActor");
+
+            final ActorRef bucketActor1 = system.actorOf(Bucket.props("BF Bucket", JPYclients), "bfBucketActor");
+            final ActorRef bucketActor2 = system.actorOf(Bucket.props("BM Bucket", USDClients), "bmBucketActor");
+
             bucketRefs.get("BITFLYER_PERP_BTC_JPY").add(bucketActor1);
             bucketRefs.get("BITMEX_SPOT_BTC_USD").add(bucketActor2);
             final ActorRef sorterActor = system.actorOf(Sorter.props(bucketRefs), "sorterActor");

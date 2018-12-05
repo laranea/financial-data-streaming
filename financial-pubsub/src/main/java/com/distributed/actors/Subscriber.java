@@ -17,6 +17,10 @@ public class Subscriber extends AbstractActor {
 
     }
 
+    static class SubscribeClient{
+
+
+    }
     static class SpawnSorter{
 
         public SpawnSorter(){

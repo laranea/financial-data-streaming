@@ -13,17 +13,16 @@ import java.util.Map;
 
 public class Sorter  extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-//    public Map<String, List<Trade>> sortedTrades;
     public Map<String, List<ActorRef>> bucketRefs;
-    public static Props props(Map bucketRefs) {
-        return Props.create(Sorter.class, () -> new Sorter(bucketRefs));
-    }
-
     static public class Receiver {
         public final Trade trade;
         public Receiver(Trade trade){
             this.trade = trade;
         }
+    }
+
+    public static Props props(Map bucketRefs) {
+        return Props.create(Sorter.class, () -> new Sorter(bucketRefs));
     }
     public Sorter(Map bucketRefs) {
         this.bucketRefs = bucketRefs;
@@ -33,8 +32,6 @@ public class Sorter  extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Receiver.class, receiver-> {
-//                    sortedTrades.computeIfAbsent(receiver.trade.symbol_id, (x -> new ArrayList<>())).add(receiver.trade);
-//
                     for (ActorRef bucketRef: bucketRefs.get(receiver.trade.symbol_id)) {
                         bucketRef.tell(new Bucket.Receiver(receiver.trade), getSelf());
                     }
