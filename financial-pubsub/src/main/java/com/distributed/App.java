@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.distributed.actors.CoinLoader;
+import com.distributed.actors.Parser;
 import com.distributed.actors.helloworld.Greeter;
 import com.distributed.actors.helloworld.Printer;
 import org.slf4j.Logger;
@@ -48,10 +49,11 @@ public class App {
         try {
             // Create actors (note the ActorRef and not actual actor objects.
             final ActorRef printerActor = system.actorOf(Printer.props(), "printerActor");
+            final ActorRef parserActor = system.actorOf(Parser.props(), "parserActor");
 
             String dataFilePath = properties.getProperty(DATA_FILE);
 
-            final ActorRef loaderActor = system.actorOf(CoinLoader.props(dataFilePath, printerActor), "coinLoaderActor");
+            final ActorRef loaderActor = system.actorOf(CoinLoader.props(dataFilePath, parserActor), "coinLoaderActor");
 
 
             System.out.println(properties.getProperty(INTERVAL_MS));

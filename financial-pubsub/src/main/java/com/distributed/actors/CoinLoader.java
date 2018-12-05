@@ -3,9 +3,6 @@ package com.distributed.actors;
 import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.distributed.actors.helloworld.Printer;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -88,7 +85,7 @@ public class CoinLoader extends AbstractActor {
 
                     String randomTrade = data.get(index);
 
-                    ref.tell(new Printer.Greeting(randomTrade), getSelf());
+                    ref.tell(new Parser.RAWJson(randomTrade), getSelf());
                 })
                 .build();
     }
