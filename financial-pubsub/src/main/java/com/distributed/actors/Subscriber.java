@@ -14,7 +14,20 @@ public class Subscriber extends AbstractActor {
     }
 
     public Subscriber(){
+
     }
+
+    static class SubscribeClient{
+
+
+    }
+    static class SpawnSorter{
+
+        public SpawnSorter(){
+
+        }
+    }
+
 
     @Override
     public Receive createReceive() {
