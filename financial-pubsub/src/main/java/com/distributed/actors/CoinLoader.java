@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
@@ -38,7 +40,7 @@ public class CoinLoader extends AbstractActor {
 
     private final ActorRef ref;
     private final String dataFilePath;
-    private final Object[] data;
+    private final List<String> data;
     private Cancellable cancellable;
 
     public CoinLoader(String dataFilePath, ActorRef ref) throws IOException {
@@ -82,16 +84,16 @@ public class CoinLoader extends AbstractActor {
                 }).match(Send.class, send -> {
                     Random rand = new Random();
 
-                    int index = rand.nextInt(data.length);
+                    int index = rand.nextInt(data.size());
 
-                    Object randomTrade = data[index];
+                    String randomTrade = data.get(index);
 
                     ref.tell(new Printer.Greeting(randomTrade), getSelf());
                 })
                 .build();
     }
 
-    private Object[] loadCoinsData() throws IOException {
+    private List<String> loadCoinsData() throws IOException {
         LOGGER.info("Reading file {}", this.dataFilePath);
         // Check if file exists else fail
         Path filePath = Paths.get(dataFilePath);
@@ -105,11 +107,13 @@ public class CoinLoader extends AbstractActor {
         Reader decoder          = new InputStreamReader(gzipStream);
         BufferedReader buffered = new BufferedReader(decoder);
 
-        Gson gson = new GsonBuilder().create();
-        Object[] data = gson.fromJson(buffered, Object[].class);
+        List<String> lines = new ArrayList<>();
+        String line;
+        while ((line = buffered.readLine()) != null) {
+            lines.add(line);
+        }
 
-        LOGGER.debug("Read {} coin trades", data.length);
-
-        return data;
+        LOGGER.debug("Read {} coin trades", lines.size());
+        return lines;
     }
 }
