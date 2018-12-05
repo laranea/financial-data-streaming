@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 
 public class Parser extends AbstractActor {
     Gson gson;
+    private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+
     public Parser(){
         gson = new Gson();
     }
@@ -20,12 +22,10 @@ public class Parser extends AbstractActor {
 
     static public class RAWJson {
         public final Object json;
-
         public RAWJson(Object json) {
             this.json = json;
         }
     }
-    private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
 
     @Override
