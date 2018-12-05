@@ -55,11 +55,20 @@ public class App {
             final ActorRef parserActor = system.actorOf(Parser.props(sorterActor), "parserActor");
             String dataFilePath = properties.getProperty(DATA_FILE);
 
-            final ActorRef loaderActor = system.actorOf(CoinLoader.props(dataFilePath, parserActor), "coinLoaderActor");
+
+            List<ActorRef> parsers = new ArrayList<>();
+            parsers.add(parserActor);
+
+            // Loadbalancer (data loader -> parsers)
+            ActorRef rrActor = system.actorOf(RoundRobinLoadbalancerActor.props(parsers));
+
+
+            // Data loader actor
+            final ActorRef loaderActor = system.actorOf(DataLoader.props(dataFilePath, rrActor), "coinLoaderActor");
 
             long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
 
-            loaderActor.tell(new CoinLoader.Start(interval), ActorRef.noSender());
+            loaderActor.tell(new DataLoader.Start(interval), ActorRef.noSender());
 
             System.out.println("Press ENTER to exit the system");
             System.in.read();
