@@ -6,24 +6,35 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
+import com.google.gson.Gson;
+
+import javax.websocket.Session;
 
 public class ClientActor  extends AbstractActor {
-    private final ActorRef subscriberActor;
 
+    private final Session session;
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private final Gson jsonParser = new Gson();
 
-    public static Props props(ActorRef subscriberActor) {
-        return Props.create(ClientActor.class, () -> new ClientActor(subscriberActor));
+    public static Props props(Session session) {
+        return Props.create(ClientActor.class, () -> new ClientActor(session));
     }
 
-    public ClientActor(ActorRef subscriberActor) {
-        this.subscriberActor = subscriberActor;
-
+    public ClientActor(Session session) {
+        this.session = session;
     }
     static public class SubscribeToBucket{
         String topic;
         public SubscribeToBucket(String topic) {
             this.topic = topic;
+        }
+    }
+
+    static public class Message {
+        public String message;
+
+        public Message(String message) {
+            this.message = message;
         }
     }
 
@@ -40,9 +51,11 @@ public class ClientActor  extends AbstractActor {
         return receiveBuilder()
                 .match(Receiver.class, receiver -> {
                     log.info(receiver.trade.toString());
-                }).match(SubscribeToBucket.class, subscription -> {
-                    this.subscriberActor.tell(new Subscriber.SubscribeClientToTopic(getSelf(), subscription.topic), getSelf());
-                }).build();
+                    this.session.getBasicRemote().sendText(jsonParser.toJson(receiver.trade));
+                }).match(Message.class, m -> {
+                            this.session.getBasicRemote().sendText(m.message);
+                        }
+                        ).build();
 
     }
 }

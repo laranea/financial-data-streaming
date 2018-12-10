@@ -36,6 +36,14 @@ public class Bucket extends AbstractActor {
         }
     }
 
+    static public class RemoveClient {
+        public final ActorRef client;
+
+        public RemoveClient(ActorRef client) {
+            this.client = client;
+        }
+    }
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -45,6 +53,8 @@ public class Bucket extends AbstractActor {
                     }
                 }).match(Bucket.NewClient.class, newClient-> {
                     this.clients.add(newClient.client);
-                }).build();
+                })
+
+                .build();
     }
 }

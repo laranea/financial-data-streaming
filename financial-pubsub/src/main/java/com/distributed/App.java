@@ -66,11 +66,11 @@ public class App {
         try {
             final ActorRef subscriberActor = system.actorOf(Subscriber.props(), "subscriberActor");
 
-            final ActorRef clientActor1 = system.actorOf(ClientActor.props(subscriberActor), "clientActor1");
-            final ActorRef clientActor2 = system.actorOf(ClientActor.props(subscriberActor), "clientACtor2");
-            clientActor1.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
-            clientActor1.tell(new ClientActor.SubscribeToBucket("BITMEX_SPOT_BTC_USD"), ActorRef.noSender());
-            clientActor2.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
+//            final ActorRef clientActor1 = system.actorOf(ClientActor.props(subscriberActor), "clientActor1");
+//            final ActorRef clientActor2 = system.actorOf(ClientActor.props(subscriberActor), "clientACtor2");
+//            clientActor1.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
+//            clientActor1.tell(new ClientActor.SubscribeToBucket("BITMEX_SPOT_BTC_USD"), ActorRef.noSender());
+//            clientActor2.tell(new ClientActor.SubscribeToBucket("BITFLYER_PERP_BTC_JPY"), ActorRef.noSender());
 
 
 
@@ -89,9 +89,9 @@ public class App {
             // Data loader actor
             final ActorRef loaderActor = system.actorOf(DataLoader.props(dataFilePath, rrActor), "coinLoaderActor");
 
-//            long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
-//
-//            loaderActor.tell(new DataLoader.Start(interval), ActorRef.noSender());
+            long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
+
+            loaderActor.tell(new DataLoader.Start(interval), ActorRef.noSender());
 
             /*
                 Start websocket server

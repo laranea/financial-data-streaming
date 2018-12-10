@@ -2,6 +2,7 @@ package com.distributed.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
@@ -13,6 +14,8 @@ import java.util.*;
 public class Subscriber extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
+    private final Map<String, ActorRef> clients;
+
     Map<String, List<ActorRef>> clientRefs;
     Map<String, List<ActorRef>> bucketRefs;
 
@@ -22,7 +25,8 @@ public class Subscriber extends AbstractActor {
 
     public Subscriber(){
         this.clientRefs = getClientRefs();
-        this.bucketRefs = getBucketRefs();
+        this.bucketRefs = new HashMap<>();
+        clients = new HashMap<>();
     }
 
     private Map<String, List<ActorRef>> getClientRefs(){
@@ -32,18 +36,6 @@ public class Subscriber extends AbstractActor {
         return temp;
     }
 
-    private Map<String, List<ActorRef>> getBucketRefs(){
-        Map<String, List<ActorRef>> temp = new HashMap<>();
-        temp.put("BITFLYER_PERP_BTC_JPY", new ArrayList<>());
-        temp.put("BITMEX_SPOT_BTC_USD", new ArrayList<>());
-
-        final ActorRef bucketActor1 = getContext().actorOf(Bucket.props("BITFLYER_PERP_BTC_JPY"), "bfBucketActor");
-        final ActorRef bucketActor2 = getContext().actorOf(Bucket.props("BITMEX_SPOT_BTC_USD"), "bmBucketActor");
-
-        temp.get("BITFLYER_PERP_BTC_JPY").add(bucketActor1);
-        temp.get("BITMEX_SPOT_BTC_USD").add(bucketActor2);
-        return temp;
-    }
     static class SubscribeClientToTopic{
         public ActorRef client;
         public String topic;
@@ -96,8 +88,47 @@ public class Subscriber extends AbstractActor {
                 }
             }).match(GetBucketRefs.class, n -> {
                 getSender().tell(new Sorter.BucketRefs(this.bucketRefs), getSelf());
-            })
+            }).match(AddNewClient.class, c -> {
+                String id = c.session.getId();
+                ActorRef newClient = getContext().getSystem().actorOf(ClientActor.props(c.session), "client-" + id);
+                this.clients.put(id, newClient);
+                log.info("Added client actor with id {}", id);
+            }).match(RemoveClient.class, c -> {
+                    // Unsubscribe from bucket
 
-                .build();
+
+                    // Kill client actor
+                    ActorRef client = this.clients.get(c.sessionId);
+                    client.tell(PoisonPill.getInstance(), getSelf());
+
+                    log.info("Removed client actor with id {}", c.sessionId);
+                })
+                .match(AddNewSubscriptionForClient.class, sub -> {
+                    ActorRef client = this.clients.get(sub.clientId);
+
+                    for(String symbol : sub.symbols){
+                        List<ActorRef> buckets = bucketRefs.getOrDefault(symbol, new ArrayList<>());
+
+                        if (buckets.isEmpty()) {
+                            log.info("Bucket for symbol {} does not exist. Creating new one.", symbol);
+
+                            ActorRef newBucket = getContext().actorOf(Bucket.props(symbol), "bucket-" + symbol);
+                            buckets.add(newBucket);
+
+                            bucketRefs.put(symbol, buckets);
+                        }
+
+                        for (ActorRef bucket : buckets){
+                            bucket.tell(new Bucket.NewClient(client), getSelf());
+                        }
+
+
+                        log.info("Added client {} to symbol subscription {}", sub.clientId, symbol);
+                    }
+
+//                    client.tell(new ClientActor.Message("Success"), ActorRef.noSender());
+
+
+                }).build();
     }
 }

@@ -2,10 +2,13 @@ package com.distributed.http;
 
 import akka.actor.ActorRef;
 import com.distributed.actors.Subscriber;
+import com.google.gson.Gson;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @ClientEndpoint
@@ -28,13 +31,13 @@ public class PubSubWebsocket {
         System.out.println("Recv: " + message);
 
         // Extract symbols
-        Set<String> symbols = getSymbolsFromMessage(message);
+        List<String> symbols = getSymbolsFromMessage(message);
 
-        subscribtionActor.tell(new Subscriber.AddNewSubscriptionForClient(session.getId(), symbols), ActorRef.noSender());
+        subscribtionActor.tell(new Subscriber.AddNewSubscriptionForClient(session.getId(), new HashSet<>(symbols)), ActorRef.noSender());
     }
 
-    private Set<String> getSymbolsFromMessage(String message) {
-        return new HashSet<>();
+    private List<String> getSymbolsFromMessage(String message) {
+        return new Gson().fromJson(message, List.class);
     }
 
     @OnClose

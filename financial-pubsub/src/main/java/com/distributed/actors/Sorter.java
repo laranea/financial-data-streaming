@@ -8,6 +8,7 @@ import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class Sorter  extends AbstractActor {
     }
     public Sorter(ActorRef subscriberActor) {
         this.subscribeActor = subscriberActor;
+        this.bucketRefs = new HashMap<>();
         this.subscribeActor.tell(new Subscriber.GetBucketRefs(), getSelf());
     }
 
@@ -43,7 +45,11 @@ public class Sorter  extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Receiver.class, receiver-> {
-                    for (ActorRef bucketRef: bucketRefs.get(receiver.trade.symbol_id)) {
+                    if(bucketRefs.isEmpty()){
+                        return;
+                    }
+
+                    for (ActorRef bucketRef : bucketRefs.get(receiver.trade.symbol_id)) {
                         bucketRef.tell(new Bucket.Receiver(receiver.trade), getSelf());
                     }
                 }).match(BucketRefs.class, response -> {
