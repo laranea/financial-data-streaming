@@ -5,12 +5,9 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.distributed.actors.helloworld.Printer;
 import com.distributed.domain.Trade;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class Parser extends AbstractActor {
     Gson gson;
