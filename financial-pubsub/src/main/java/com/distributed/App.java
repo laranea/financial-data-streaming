@@ -3,6 +3,7 @@ package com.distributed;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.distributed.actors.*;
+import com.distributed.http.PubSubEndpointConfiguration;
 import com.distributed.http.PubSubResource;
 import com.distributed.http.PubSubWebsocket;
 import io.netty.channel.Channel;
@@ -22,6 +23,7 @@ import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -111,15 +113,11 @@ public class App {
                 ServerContainer wscontainer = WebSocketServerContainerInitializer.configureContext(context);
 
                 // Add WebSocket endpoint to javax.websocket layer
-                wscontainer.addEndpoint(PubSubWebsocket.class);
+                wscontainer.addEndpoint(ServerEndpointConfig.Builder.create(PubSubWebsocket.class, "/subscribe/")
+                        .configurator(new PubSubEndpointConfiguration(subscriberActor)).build());
 
-
-
-
-                System.out.println("URI: " + server.getURI().toURL());
 
                 server.start();
-//                server.dump();
                 server.dump(System.out);
                 server.join();
 

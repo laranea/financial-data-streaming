@@ -6,10 +6,8 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.websocket.Session;
+import java.util.*;
 
 
 public class Subscriber extends AbstractActor {
@@ -55,9 +53,35 @@ public class Subscriber extends AbstractActor {
         }
     }
 
-    static class GetBucketRefs{
+    public static class GetBucketRefs{
 
         public GetBucketRefs(){
+        }
+    }
+
+    public static class AddNewClient {
+        public final Session session;
+
+        public AddNewClient(Session session) {
+            this.session = session;
+        }
+    }
+
+    public static class RemoveClient {
+        public final String sessionId;
+
+        public RemoveClient(String sessionId) {
+            this.sessionId = sessionId;
+        }
+    }
+
+    public static class AddNewSubscriptionForClient {
+        public final String clientId;
+        public final Set<String> symbols;
+
+        public AddNewSubscriptionForClient(String clientId, Set<String> symbols) {
+            this.clientId = clientId;
+            this.symbols = symbols;
         }
     }
 
@@ -72,6 +96,8 @@ public class Subscriber extends AbstractActor {
                 }
             }).match(GetBucketRefs.class, n -> {
                 getSender().tell(new Sorter.BucketRefs(this.bucketRefs), getSelf());
-            }).build();
+            })
+
+                .build();
     }
 }
