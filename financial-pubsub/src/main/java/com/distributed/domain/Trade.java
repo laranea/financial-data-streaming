@@ -1,9 +1,10 @@
 package com.distributed.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-public class Trade {
+public class Trade implements Serializable {
     public String time_exchange;
     public String time_coinapi;
     public String uuid;

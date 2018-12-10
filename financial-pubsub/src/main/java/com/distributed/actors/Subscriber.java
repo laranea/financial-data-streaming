@@ -6,6 +6,7 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +56,7 @@ public class Subscriber extends AbstractActor {
         }
     }
 
-    static class GetBucketRefs{
-
+    static class GetBucketRefs implements Serializable {
         public GetBucketRefs(){
         }
     }

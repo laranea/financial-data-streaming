@@ -7,10 +7,11 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Bucket extends AbstractActor {
+public class Bucket extends AbstractActor implements Serializable{
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     public String topic;
     public List<ActorRef> clients;
@@ -23,13 +24,13 @@ public class Bucket extends AbstractActor {
         this.clients = new ArrayList<>();
     }
 
-    static public class Receiver {
+    static class Receiver implements Serializable {
         public final Trade trade;
         public Receiver(Trade trade){
             this.trade = trade;
         }
     }
-    static public class  NewClient{
+    static class  NewClient implements Serializable{
         public final ActorRef client;
         public NewClient(ActorRef client){
             this.client = client;
