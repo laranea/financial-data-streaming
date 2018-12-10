@@ -57,7 +57,6 @@ public class Subscriber extends AbstractActor {
     }
 
     static class GetBucketRefs implements Serializable {
-
         public GetBucketRefs(){
         }
     }

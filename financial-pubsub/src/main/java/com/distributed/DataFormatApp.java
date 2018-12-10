@@ -1,7 +1,6 @@
 package com.distributed;
 
 import akka.actor.*;
-import akka.util.Timeout;
 import com.distributed.actors.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -14,9 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static com.distributed.properties.Tokens.*;
 import static java.nio.file.StandardOpenOption.READ;
@@ -57,7 +53,7 @@ public class DataFormatApp {
             parsers.add(parserActor);
 
             // Loadbalancer (data loader -> parsers)
-            ActorRef rrActor = system.actorOf(RoundRobinLoadbalancerActor.props(parsers));
+            ActorRef rrActor = system.actorOf(Loadbalancer.props(parsers, subscriberSelection));
 
 
             // Data loader actor
