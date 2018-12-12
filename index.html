@@ -1,0 +1,71 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<title>PubSub</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body>
+
+    <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <a class="navbar-brand" href="#">PubSub console</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <span class="navbar-text" id="status">
+                        Not connected
+                    </span>
+            </nav>
+
+
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="symbols" placeholder="Comma seperated symbols" aria-label="Comma seperated list of symbols" aria-describedby="button-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="send();">Send</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <textarea class="form-control" id="console" aria-label="With textarea"></textarea>
+            </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script>
+    var url = "ws://localhost:8080/subscribe/";
+    var socket = new WebSocket(url);
+
+
+    function sleep(milliseconds) {
+        var start = new Date().getTime();
+        for (var i = 0; i < 1e7; i++) {
+            if ((new Date().getTime() - start) > milliseconds){
+                break;
+            }
+        }
+    }
+
+    function send() {
+        var symbols = $("#symbols").val().trim().split(",")
+
+        console.log("Click:", symbols)
+        socket.send(JSON.stringify(symbols)); 
+    }
+    socket.onopen = function (event) {
+        //sleep(2000);
+        // socket.send(JSON.stringify(['BITFLYER_PERP_BTC_JPY', 'BITMEX_SPOT_BTC_USD'])); 
+        document.getElementById("status").textContent = "Connected";
+    };
+
+    var con = document.getElementById("console")
+    socket.onmessage = function (event) {
+        console.log(event.data);
+
+
+        var text = con.value
+        con.textContent =  '[' + new Date().toLocaleTimeString() + ']: ' + event.data + '\n' + text;
+    }
+</script> 
+</html> 

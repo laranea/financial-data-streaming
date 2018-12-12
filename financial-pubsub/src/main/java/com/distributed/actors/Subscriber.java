@@ -7,16 +7,13 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
-<<<<<<< HEAD
 import javax.websocket.Session;
 import java.util.*;
-=======
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
->>>>>>> 54ea479bd0987978db9435b493b4c2750ed18209
 
 
 public class Subscriber extends AbstractActor {
@@ -53,12 +50,7 @@ public class Subscriber extends AbstractActor {
         }
     }
 
-<<<<<<< HEAD
-    public static class GetBucketRefs{
-
-=======
     static class GetBucketRefs implements Serializable {
->>>>>>> 54ea479bd0987978db9435b493b4c2750ed18209
         public GetBucketRefs(){
         }
     }

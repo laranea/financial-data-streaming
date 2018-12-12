@@ -7,13 +7,10 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 
-<<<<<<< HEAD
 import java.util.*;
-=======
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
->>>>>>> 54ea479bd0987978db9435b493b4c2750ed18209
 
 public class Bucket extends AbstractActor implements Serializable{
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);

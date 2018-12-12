@@ -46,19 +46,12 @@ public class Sorter  extends AbstractActor implements Serializable{
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Receiver.class, receiver-> {
-<<<<<<< HEAD
                     if(bucketRefs.isEmpty()){
                         return;
                     }
 
                     for (ActorRef bucketRef : bucketRefs.get(receiver.trade.symbol_id)) {
                         bucketRef.tell(new Bucket.Receiver(receiver.trade), getSelf());
-=======
-                    if(bucketRefs != null){
-                        for (ActorRef bucketRef: bucketRefs.get(receiver.trade.symbol_id)) {
-                            bucketRef.tell(new Bucket.Receiver(receiver.trade), getSelf());
-                        }
->>>>>>> 54ea479bd0987978db9435b493b4c2750ed18209
                     }
 
                 }).match(BucketRefs.class, response -> {
