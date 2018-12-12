@@ -52,7 +52,7 @@ public class RoundRobinLoadbalancerActor extends AbstractActor {
 
             ActorRef actor = actors.get(pointer);
 
-            log.info("{} sent message {} to {}", getSender(), o, actor);
+//            log.info("{} sent message {} to {}", getSender(), o, actor);
             actor.forward(o, getContext());
             pointer++;
         }).build();

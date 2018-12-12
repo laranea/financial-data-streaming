@@ -7,20 +7,19 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Bucket extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     public String topic;
-    public List<ActorRef> clients;
+    public Set<ActorRef> clients;
 
     public static Props props(String topic) {
         return Props.create(Bucket.class, () -> new Bucket(topic));
     }
     public Bucket(String topic) {
         this.topic = topic;
-        this.clients = new ArrayList<>();
+        this.clients = new HashSet<>();
     }
 
     static public class Receiver {
@@ -53,8 +52,9 @@ public class Bucket extends AbstractActor {
                     }
                 }).match(Bucket.NewClient.class, newClient-> {
                     this.clients.add(newClient.client);
+                }).match(Bucket.RemoveClient.class, client -> {
+                    this.clients.remove(client);
                 })
-
                 .build();
     }
 }

@@ -50,7 +50,7 @@ public class ClientActor  extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Receiver.class, receiver -> {
-                    log.info(receiver.trade.toString());
+//                    log.info(receiver.trade.toString());
                     this.session.getBasicRemote().sendText(jsonParser.toJson(receiver.trade));
                 }).match(Message.class, m -> {
                             this.session.getBasicRemote().sendText(m.message);

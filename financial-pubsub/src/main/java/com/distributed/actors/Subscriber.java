@@ -95,16 +95,23 @@ public class Subscriber extends AbstractActor {
                 log.info("Added client actor with id {}", id);
             }).match(RemoveClient.class, c -> {
                     // Unsubscribe from bucket
+                    ActorRef client = this.clients.get(c.sessionId);
 
+                    for(List<ActorRef> refs : bucketRefs.values()){
+                        for (ActorRef bucket : refs){
+                            bucket.tell(new Bucket.RemoveClient(client), getSelf());
+                        }
+                    }
 
                     // Kill client actor
-                    ActorRef client = this.clients.get(c.sessionId);
                     client.tell(PoisonPill.getInstance(), getSelf());
 
                     log.info("Removed client actor with id {}", c.sessionId);
                 })
                 .match(AddNewSubscriptionForClient.class, sub -> {
                     ActorRef client = this.clients.get(sub.clientId);
+
+
 
                     for(String symbol : sub.symbols){
                         List<ActorRef> buckets = bucketRefs.getOrDefault(symbol, new ArrayList<>());
@@ -120,6 +127,14 @@ public class Subscriber extends AbstractActor {
 
                         for (ActorRef bucket : buckets){
                             bucket.tell(new Bucket.NewClient(client), getSelf());
+                        }
+
+                        if(clientRefs.containsKey(symbol)){
+                            clientRefs.get(symbol).add(client);
+                        } else {
+                            List<ActorRef> refs = new ArrayList<>();
+                            refs.add(client);
+                            clientRefs.put(symbol, refs);
                         }
 
 
