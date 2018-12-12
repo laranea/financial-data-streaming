@@ -15,10 +15,25 @@ import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
 public class DataLoader extends AbstractActor {
-
+    private final ActorRef ref;
+    private final String dataFilePath;
+    private final List<String> data;
+    private Cancellable cancellable;
 
     static public Props props(String dataFilePath, ActorRef ref) {
         return Props.create(DataLoader.class, () -> new DataLoader(dataFilePath, ref));
+    }
+    private LoggingAdapter LOGGER = Logging.getLogger(getContext().getSystem(), this);
+
+
+    public DataLoader(String dataFilePath, ActorRef ref) throws IOException {
+        if(dataFilePath == null) {
+            throw new IllegalArgumentException("File path cannot be null");
+        }
+
+        this.dataFilePath = dataFilePath;
+        this.data = loadCoinsData();
+        this.ref = ref;
     }
 
     static public class Start {
@@ -33,22 +48,6 @@ public class DataLoader extends AbstractActor {
 
     static public class Stop {}
 
-    private LoggingAdapter LOGGER = Logging.getLogger(getContext().getSystem(), this);
-
-    private final ActorRef ref;
-    private final String dataFilePath;
-    private final List<String> data;
-    private Cancellable cancellable;
-
-    public DataLoader(String dataFilePath, ActorRef ref) throws IOException {
-        if(dataFilePath == null) {
-            throw new IllegalArgumentException("File path cannot be null");
-        }
-
-        this.dataFilePath = dataFilePath;
-        this.data = loadCoinsData();
-        this.ref = ref;
-    }
 
     @Override
     public Receive createReceive() {
