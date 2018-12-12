@@ -1,14 +1,11 @@
 package com.distributed.actors;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 import com.google.gson.Gson;
-
-import java.util.Date;
+import scala.Option;
 
 
 public class Parser extends AbstractActor {
@@ -19,6 +16,10 @@ public class Parser extends AbstractActor {
     public long initializationTimestamp;
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
+    public static Props props(ActorRef sorterRef) {
+        return Props.create(Parser.class, () -> new Parser(sorterRef));
+    }
+
     public Parser(ActorRef sorterRef){
         this.gson = new Gson();
         this.sorterRef = (sorterRef);
@@ -26,9 +27,8 @@ public class Parser extends AbstractActor {
         this.receivedTrades = 0;
         this.uptimeSeconds = 0;
     }
-    public static Props props(ActorRef sorterRef) {
-        return Props.create(Parser.class, () -> new Parser(sorterRef));
-    }
+
+
 
     static public class RAWJson {
         public final Object json;
@@ -42,9 +42,28 @@ public class Parser extends AbstractActor {
         return receiveBuilder()
                 .match(RAWJson.class, rawJson -> {
                     this.receivedTrades++;
-                    this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 1000;
+                    this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 0;
                     log.info("Parser: {} parsed {} trades in {} seconds", getSelf().toString(), this.receivedTrades, this.uptimeSeconds);
                     sorterRef.tell(new Sorter.Receiver(gson.fromJson((String) rawJson.json, Trade.class)), getSelf());
                 }).build();
+    }
+    @Override
+    public void preRestart(Throwable reason, Option<Object> message) {
+        System.out.println(self().path().name() + " is about to restart");
+    }
+
+    @Override
+    public void postRestart(Throwable reason) {
+        System.out.println(self().path().name() + " has restarted");
+    }
+
+    @Override
+    public void preStart() {
+        System.out.println(self().path().name() + " is starting");
+    }
+
+    @Override
+    public void postStop() {
+        System.out.println("Stopped");
     }
 }
