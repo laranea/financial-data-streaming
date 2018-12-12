@@ -2,6 +2,10 @@ package com.distributed;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.CsvReporter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.distributed.actors.*;
 import com.distributed.http.PubSubEndpointConfiguration;
 import com.distributed.http.PubSubResource;
@@ -16,12 +20,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.distributed.properties.Tokens.*;
 import static java.nio.file.StandardOpenOption.READ;
@@ -32,6 +38,9 @@ import static java.nio.file.StandardOpenOption.READ;
  */
 public class DataUseApp {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataUseApp.class);
+
+    public static final MetricRegistry metrics = new MetricRegistry();
+
     public static void main( String[] args ) throws IOException {
         if(args.length < 1){
             LOGGER.error("Missing argument for configuration file");
@@ -53,6 +62,7 @@ public class DataUseApp {
         try {
             final ActorRef subscriberActor = system.actorOf(Subscriber.props(), "subscriberActor");
             ActorRef supervisionActor = system.actorOf(Supervision.props(), "supervisionActor");
+
             /*
                 Start websocket server
              */
@@ -95,6 +105,23 @@ public class DataUseApp {
         } finally {
             system.terminate();
         }
+    }
+
+    static void startReport() {
+        ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build();
+        reporter.start(1, TimeUnit.SECONDS);
+    }
+
+    public static void startCSVReport(){
+        final CsvReporter reporter = CsvReporter.forRegistry(metrics)
+                .formatFor(Locale.US)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build(new File("./"));
+        reporter.start(1, TimeUnit.SECONDS);
     }
 
     public static Optional<Properties> loadProperties(String propertiesFileName) {

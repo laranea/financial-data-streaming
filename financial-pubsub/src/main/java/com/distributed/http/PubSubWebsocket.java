@@ -1,6 +1,7 @@
 package com.distributed.http;
 
 import akka.actor.ActorRef;
+import com.distributed.DataUseApp;
 import com.distributed.actors.Subscriber;
 import com.google.gson.Gson;
 
@@ -29,6 +30,8 @@ public class PubSubWebsocket {
     @OnMessage
     public void onWebSocketText(String message, Session session) {
         System.out.println("Recv: " + message);
+
+        DataUseApp.startCSVReport();
 
         // Extract symbols
         List<String> symbols = getSymbolsFromMessage(message);
