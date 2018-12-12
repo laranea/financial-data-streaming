@@ -53,7 +53,7 @@ public class Bucket extends AbstractActor implements Serializable{
                 }).match(NewClient.class, newClient-> {
                     this.clients.add(newClient.client);
                 }).match(RemoveClient.class, client -> {
-                    this.clients.remove(client);
+                    this.clients.remove(client.client);
                 })
                 .build();
     }

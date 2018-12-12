@@ -8,9 +8,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Sorter  extends AbstractActor implements Serializable{
     private final ActorSelection subscribeActor;
@@ -69,18 +67,20 @@ public class Sorter  extends AbstractActor implements Serializable{
 
                 }).match(BucketRefs.class, response -> {
                     this.bucketRefs = response.bucketRefs;
+                    System.out.println("Buckets " + this.bucketRefs  + " " + this.bucketRefs.size());
                 }).match(Refresh.class, refresh-> {
                     List<ActorRef> buckets = this.bucketRefs.get(refresh.topic);
 
-                    System.out.print("Refresh...");
-
                     if(buckets == null){
+
+                        List<ActorRef> newBuckets = List.of(refresh.newBucket);
+                        this.bucketRefs.put(refresh.topic, newBuckets);
+
                         return;
                     }
 
-                    System.out.println("Done");
-
-                    buckets.add(refresh.newBucket);
+                    List<ActorRef> bucketsCopy = new ArrayList<>(buckets);
+                    this.bucketRefs.put(refresh.topic, bucketsCopy);
                 }).build();
     }
     @Override
