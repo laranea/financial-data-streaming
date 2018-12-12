@@ -42,7 +42,7 @@ public class Parser extends AbstractActor {
         return receiveBuilder()
                 .match(RAWJson.class, rawJson -> {
                     this.receivedTrades++;
-                    this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 0;
+                    this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 1000;
                     log.info("Parser: {} parsed {} trades in {} seconds", getSelf().toString(), this.receivedTrades, this.uptimeSeconds);
                     sorterRef.tell(new Sorter.Receiver(gson.fromJson((String) rawJson.json, Trade.class)), getSelf());
                 }).build();

@@ -52,7 +52,7 @@ public class DataUseApp {
 
         try {
             final ActorRef subscriberActor = system.actorOf(Subscriber.props(), "subscriberActor");
-
+            ActorRef supervisionActor = system.actorOf(Supervision.props(), "supervisionActor");
             /*
                 Start websocket server
              */
