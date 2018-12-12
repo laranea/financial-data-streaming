@@ -45,7 +45,8 @@ public class DataFormatApp {
 
         try {
 
-            ActorSelection subscriberSelection =  system.actorSelection("akka.tcp://financial-pubsub@127.0.0.1:2547/user/subscriberActor");
+            ActorSelection subscriberSelection =  system.actorSelection("akka.tcp://financial-pubsub@54.167.4.33:2547/user/subscriberActor");
+
             String dataFilePath = properties.getProperty(DATA_FILE);
 
             ActorRef supervisorRef = system.actorOf(Supervision.props());

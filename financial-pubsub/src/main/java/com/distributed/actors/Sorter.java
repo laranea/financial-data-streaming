@@ -67,7 +67,6 @@ public class Sorter  extends AbstractActor implements Serializable{
 
                 }).match(BucketRefs.class, response -> {
                     this.bucketRefs = response.bucketRefs;
-                    System.out.println("Buckets " + this.bucketRefs  + " " + this.bucketRefs.size());
                 }).match(Refresh.class, refresh-> {
                     List<ActorRef> buckets = this.bucketRefs.get(refresh.topic);
 
