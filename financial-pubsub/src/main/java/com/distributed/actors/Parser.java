@@ -28,8 +28,6 @@ public class Parser extends AbstractActor {
         this.uptimeSeconds = 0;
     }
 
-
-
     static public class RAWJson {
         public final Object json;
         public RAWJson(Object json) {
@@ -43,27 +41,7 @@ public class Parser extends AbstractActor {
                 .match(RAWJson.class, rawJson -> {
                     this.receivedTrades++;
                     this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 1000;
-                    log.info("Parser: {} parsed {} trades in {} seconds", getSelf().toString(), this.receivedTrades, this.uptimeSeconds);
                     sorterRef.tell(new Sorter.Receiver(gson.fromJson((String) rawJson.json, Trade.class)), getSelf());
                 }).build();
-    }
-    @Override
-    public void preRestart(Throwable reason, Option<Object> message) {
-        System.out.println(self().path().name() + " is about to restart");
-    }
-
-    @Override
-    public void postRestart(Throwable reason) {
-        System.out.println(self().path().name() + " has restarted");
-    }
-
-    @Override
-    public void preStart() {
-        System.out.println(self().path().name() + " is starting");
-    }
-
-    @Override
-    public void postStop() {
-        System.out.println("Stopped");
     }
 }

@@ -7,9 +7,7 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
-
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,15 @@ public class Sorter  extends AbstractActor implements Serializable{
         this.subscribeActor = subscriberActor;
         this.bucketRefs = new HashMap<>();
         this.subscribeActor.tell(new Subscriber.GetBucketRefs(), getSelf());
+    }
+
+    public static class Refresh implements Serializable {
+        private final ActorRef newBucket;
+        private final String topic;
+        public Refresh(String topic, ActorRef newBucket) {
+            this.topic = topic;
+            this.newBucket = newBucket;
+        }
     }
 
     public static class BucketRefs implements Serializable {
@@ -50,13 +57,25 @@ public class Sorter  extends AbstractActor implements Serializable{
                         return;
                     }
 
-                    for (ActorRef bucketRef : bucketRefs.get(receiver.trade.symbol_id)) {
+                    List<ActorRef> bucket = bucketRefs.get(receiver.trade.symbol_id);
+
+                    if(bucket == null){
+                        return;
+                    }
+
+                    for (ActorRef bucketRef : bucket) {
                         bucketRef.tell(new Bucket.Receiver(receiver.trade), getSelf());
                     }
 
                 }).match(BucketRefs.class, response -> {
                     this.bucketRefs = response.bucketRefs;
+                }).match(Refresh.class, refresh-> {
+                    this.bucketRefs.get(refresh.topic).add(refresh.newBucket);
                 }).build();
+    }
+    @Override
+    public void preStart() {
+        subscribeActor.tell(new Subscriber.NewSorter(getSelf()), getSelf());
     }
 
 }

@@ -1,16 +1,12 @@
 package com.distributed.actors;
 import akka.actor.AbstractActor;
-import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.distributed.domain.Trade;
-
 import java.util.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Bucket extends AbstractActor implements Serializable{
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -49,13 +45,14 @@ public class Bucket extends AbstractActor implements Serializable{
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Bucket.Receiver.class, receiver-> {
+                .match(Receiver.class, receiver-> {
+                    System.out.println("Receive message");
                     for (ActorRef ref : clients){
                         ref.tell(new ClientActor.Receiver(receiver.trade), getSelf());
                     }
-                }).match(Bucket.NewClient.class, newClient-> {
+                }).match(NewClient.class, newClient-> {
                     this.clients.add(newClient.client);
-                }).match(Bucket.RemoveClient.class, client -> {
+                }).match(RemoveClient.class, client -> {
                     this.clients.remove(client);
                 })
                 .build();

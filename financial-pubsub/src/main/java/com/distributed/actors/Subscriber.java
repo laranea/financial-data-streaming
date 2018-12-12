@@ -6,7 +6,6 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-
 import javax.websocket.Session;
 import java.util.*;
 import java.io.Serializable;
@@ -23,6 +22,7 @@ public class Subscriber extends AbstractActor {
 
     Map<String, List<ActorRef>> clientRefs;
     Map<String, List<ActorRef>> bucketRefs;
+    List<ActorRef> sorterRefs;
 
     public static Props props() {
         return Props.create(Subscriber.class, () -> new Subscriber());
@@ -31,6 +31,7 @@ public class Subscriber extends AbstractActor {
     public Subscriber(){
         this.clientRefs = getClientRefs();
         this.bucketRefs = new HashMap<>();
+        this.sorterRefs = new ArrayList<>();
         clients = new HashMap<>();
     }
 
@@ -70,6 +71,12 @@ public class Subscriber extends AbstractActor {
             this.sessionId = sessionId;
         }
     }
+    public static class NewSorter implements Serializable{
+        ActorRef sorter;
+        public NewSorter(ActorRef sorter){
+            this.sorter = sorter;
+        }
+    }
 
     public static class AddNewSubscriptionForClient {
         public final String clientId;
@@ -97,6 +104,8 @@ public class Subscriber extends AbstractActor {
                 ActorRef newClient = getContext().getSystem().actorOf(ClientActor.props(c.session), "client-" + id);
                 this.clients.put(id, newClient);
                 log.info("Added client actor with id {}", id);
+            }).match(NewSorter.class, NewSorter -> {
+                this.sorterRefs.add(NewSorter.sorter);
             }).match(RemoveClient.class, c -> {
                     // Unsubscribe from bucket
                     ActorRef client = this.clients.get(c.sessionId);
@@ -131,6 +140,9 @@ public class Subscriber extends AbstractActor {
 
                         for (ActorRef bucket : buckets){
                             bucket.tell(new Bucket.NewClient(client), getSelf());
+                            for (ActorRef sorter: sorterRefs){
+                                sorter.tell(new Sorter.Refresh(symbol, bucket), getSelf());
+                            }
                         }
 
                         if(clientRefs.containsKey(symbol)){
