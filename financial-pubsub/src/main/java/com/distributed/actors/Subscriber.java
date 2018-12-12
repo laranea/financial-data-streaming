@@ -124,7 +124,12 @@ public class Subscriber extends AbstractActor {
                 .match(AddNewSubscriptionForClient.class, sub -> {
                     ActorRef client = this.clients.get(sub.clientId);
 
-
+                    // Us-sub form previous topics
+                    for(List<ActorRef> refs : bucketRefs.values()){
+                        for (ActorRef bucket : refs){
+                            bucket.tell(new Bucket.RemoveClient(client), getSelf());
+                        }
+                    }
 
                     for(String symbol : sub.symbols){
                         List<ActorRef> buckets = bucketRefs.getOrDefault(symbol, new ArrayList<>());
