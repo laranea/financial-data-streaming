@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.concurrent.Await;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static akka.pattern.PatternsCS.ask;
 import static com.distributed.properties.Tokens.*;
 import static java.nio.file.StandardOpenOption.READ;
 
@@ -44,20 +46,12 @@ public class DataFormatApp {
         try {
 
             ActorSelection subscriberSelection =  system.actorSelection("akka.tcp://financial-pubsub@127.0.0.1:2547/user/subscriberActor");
-            final ActorRef sorterActor = system.actorOf(Sorter.props(subscriberSelection), "sorterActor");
-            final ActorRef parserActor = system.actorOf(Parser.props(sorterActor), "parserActor");
             String dataFilePath = properties.getProperty(DATA_FILE);
 
+            ActorRef supervisorRef = system.actorOf(Supervision.props());
+            ActorRef loadbalancerActor = system.actorOf(Loadbalancer.props(subscriberSelection));
+            ActorRef loaderActor = system.actorOf(DataLoader.props(dataFilePath, loadbalancerActor), "coinLoaderActor");
 
-            List<ActorRef> parsers = new ArrayList<>();
-            parsers.add(parserActor);
-
-            // Loadbalancer (data loader -> parsers)
-            ActorRef rrActor = system.actorOf(Loadbalancer.props(parsers, subscriberSelection));
-
-
-            // Data loader actor
-            final ActorRef loaderActor = system.actorOf(DataLoader.props(dataFilePath, rrActor), "coinLoaderActor");
 
             long interval = Long.parseLong( properties.getProperty(INTERVAL_MS));
 
