@@ -55,17 +55,16 @@ public class DataLoader extends AbstractActor {
                 .match(Start.class, start -> {
 
                     ActorSystem sys = this.getContext().getSystem();
-
                     cancellable = sys.scheduler()
                             .schedule(Duration.ZERO,
-                                Duration.ofMillis(start.interval_millis),
+                                Duration.ofNanos(start.interval_millis),
                                     getSelf(),
                                     new Send(),
                                     sys.dispatcher(),
                                     getSelf());
 
 
-                    LOGGER.info("Sending trades every {} millis", start.interval_millis);
+                    LOGGER.info("Sending trades every {} nanoseconds", start.interval_millis);
                 })
                 .match(Stop.class, stop -> {
                     if(cancellable != null) {

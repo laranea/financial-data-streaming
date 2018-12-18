@@ -42,7 +42,6 @@ public class Parser extends AbstractActor {
                     this.receivedTrades++;
                     this.uptimeSeconds = (System.currentTimeMillis() - this.initializationTimestamp) / 1000;
                     sorterRef.tell(new Sorter.Receiver(gson.fromJson((String) rawJson.json, Trade.class)), getSelf());
-                    log.info(rawJson.json.toString());
                 }).build();
     }
 }

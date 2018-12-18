@@ -14,7 +14,7 @@ public class Loadbalancer extends AbstractActor {
     }
 
     public Loadbalancer(ActorSelection subscribeActor) {
-        DefaultResizer resizer = new DefaultResizer(1, 15, 10,10,0,10,100);
+        DefaultResizer resizer = new DefaultResizer(1, 15, 10,10,0,10,1000);
         router = getContext().actorOf(new RoundRobinPool(5).withResizer(resizer).props(Parser.props(getContext().actorOf(Sorter.props(subscribeActor)))));
     }
 

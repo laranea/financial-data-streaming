@@ -55,10 +55,10 @@ public class ClientActor  extends AbstractActor {
         return receiveBuilder()
                 .match(Receiver.class, receiver -> {
                     requestsMeter.mark();
-                    log.info(receiver.trade.toString());
-                    this.session.getBasicRemote().sendText(jsonParser.toJson(receiver.trade));
+                    System.out.println("Client starting to receive.");;
+//                    this.session.getBasicRemote().sendText(jsonParser.toJson(receiver.trade));
                 }).match(Message.class, m -> {
-                            this.session.getBasicRemote().sendText(m.message);
+                    this.session.getBasicRemote().sendText(m.message);
                 }
                 ).build();
 

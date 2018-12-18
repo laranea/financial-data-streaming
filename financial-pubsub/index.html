@@ -19,7 +19,7 @@
 
 
             <div class="input-group mb-3">
-                <input type="text" class="form-control" id="symbols" placeholder="Comma seperated symbols" aria-label="Comma seperated list of symbols" aria-describedby="button-addon2">
+                <input type="text" class="form-control" id="symbols" placeholder="Comma seperated symbols" aria-label="Comma seperated list of symbols" aria-describedby="button-addon2", value="BITFLYER_PERP_BTC_JPY,BITMEX_SPOT_BTC_USD">
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="send();">Send</button>
                 </div>
@@ -61,11 +61,7 @@
 
     var con = document.getElementById("console")
     socket.onmessage = function (event) {
-        console.log(event.data);
-
-
-        var text = con.value
-        con.textContent =  '[' + new Date().toLocaleTimeString() + ']: ' + event.data + '\n' + text;
+        con.textContent = event.data;
     }
 </script> 
 </html> 
